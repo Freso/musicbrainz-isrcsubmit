@@ -37,6 +37,7 @@ from datetime import datetime
 from optparse import OptionParser
 from subprocess import Popen, PIPE
 from distutils.version import StrictVersion
+
 from musicbrainz2 import __version__ as musicbrainz2_version
 from musicbrainz2.disc import readDisc, DiscError, getSubmissionUrl
 from musicbrainz2.model import Track
@@ -179,7 +180,7 @@ def gatherOptions(argv):
     # only optional when the data is already added as option..
     # not sure if that is convenience or makes it impossible to understand..
     if options.user is None:
-        if len(args) > 0:
+        if args:
             options.user = args[0]
             args = args[1:]
         else:
@@ -187,13 +188,13 @@ def gatherOptions(argv):
             parser.print_usage()
             sys.exit(-1)
     if options.device is None:
-        if len(args) > 0:
+        if args:
             options.device = args[0]
             args = args[1:]
         else:
             # device is changed again for Mac, when we know the final backend
             options.device = default_device
-    if len(args) > 0:
+    if args:
         print "WARNING: Superfluous arguments:", ", ".join(args)
     if options.backend and not hasBackend(options.backend, strict=True):
         printError("Chosen backend not found. No ISRC extraction possible!")
@@ -307,7 +308,7 @@ def gatherIsrcs(backend, device):
             with open(tmpfile, "r") as toc:
                 for line in toc:
                     words = line.split()
-                    if len(words) > 0:
+                    if words:
                         if words[0] == "//":
                             track_number = int(words[2])
                         elif words[0] == "ISRC":
@@ -472,7 +473,7 @@ def main():
     if StrictVersion(musicbrainz2_version) >= "0.7.4":
         # There is a warning printed above, when < 0.7.4
         service = WebService(username=username, password=password,
-                userAgent=agent_name)
+                             userAgent=agent_name)
     else:
         # standard userAgent: python-musicbrainz/__version__
         service = WebService(username=username, password=password)
@@ -639,6 +640,9 @@ def main():
                 printError2("ISRC:", isrc, "\ttracks:", ", ".join(listOfTracks))
         try:
             track = tracks[track_number + track_offset - 1]
+        except IndexError, e:
+            printError("ISRC", isrc, "found for unknown track", track_number)
+        else:
             isrcs[isrc].addTrack(OwnTrack(track, track_number))
             # check if the ISRC was already added to the track
             if isrc not in track.getISRCs():
@@ -647,8 +651,6 @@ def main():
                 print str(track_number) + ":", isrc
             else:
                 print isrc, "is already attached to track", track_number
-        except IndexError, e:
-            printError("ISRC", isrc, "found for unknown track", track_number)
     for isrc in isrcs:
         for track in isrcs[isrc].getTracks():
             track_number = track.getNumber()
