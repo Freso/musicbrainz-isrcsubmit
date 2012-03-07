@@ -1,10 +1,10 @@
 #!/usr/bin/python2
 
 from distutils.core import setup
-from isrcsubmit import isrcsubmitVersion
+from isrcsubmit import isrcsubmit_version
 
 setup(name="isrcsubmit",
-        version=isrcsubmitVersion,
+        version=isrcsubmit_version,
         description="submit ISRCs from disc to MusicBrainz",
         long_description=open("README.md").read(),
         author="Johannes Dewender",
