@@ -388,23 +388,9 @@ def cleanupIsrcs(isrcs):
 # main + + + + + + + + + + + + + + + + + + + + + + + + + + + + +
 
 def main():
-
-    # using a shellscript to get the correct python version (2.5 - 2.7)
-    shellname = "isrcsubmit.sh"
-    if os.path.isfile(shellname):
-        scriptname = shellname
-    else:
-        scriptname = os.path.basename(sys.argv[0])
-
-    print scriptVersion()
-    print
-
-    # gather chosen options
-    options = gatherOptions(sys.argv)
-    username = options.user
-    # we set the device after we know which backen we will use
-    backend  = options.backend
-    debug    = options.debug
+    # the actual device and backend don't stay as given in the options
+    global device
+    global backend
 
     print "using python-musicbrainz2", musicbrainz2_version
     if StrictVersion(musicbrainz2_version) < "0.7.0":
@@ -477,7 +463,7 @@ def main():
         sys.exit(1)
 
     disc_id = disc.getId()
-    disc_trackCount = len(disc.getTracks())
+    disc_track_count = len(disc.getTracks())
 
     print 'DiscID:\t\t', disc_id
     print 'Tracks on Disc:\t', disc_track_count
@@ -496,7 +482,7 @@ def main():
     q = Query(service, clientId=agent_name)
 
     # searching for release
-    disc_id_filter = ReleaseFilter(disc_id=disc_id)
+    disc_id_filter = ReleaseFilter(discId=disc_id)
     try:
         results = q.getReleases(filter=disc_id_filter)
     except ConnectionError, e:
@@ -714,6 +700,26 @@ def main():
 
 
 if __name__ == "__main__":
+
+    # using a shellscript to get the correct python version (2.5 - 2.7)
+    shellname = "isrcsubmit.sh"
+    if os.path.isfile(shellname):
+        scriptname = shellname
+    else:
+        scriptname = os.path.basename(sys.argv[0])
+
+    print scriptVersion()
+    print
+
+    # gather chosen options
+    options = gatherOptions(sys.argv)
+    username = options.user
+    # we re-set the device after we know which backen we will use
+    device   = options.device
+    # we re-set the backend if it wasn't set before
+    backend  = options.backend
+    debug    = options.debug
+
     main()
 
 
